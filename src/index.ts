@@ -12,7 +12,7 @@ export type { BedrockKnowledgeStoreOptions } from "./bedrock-kb.js";
 
 export interface BedrockProviderOptions {
   type: "bedrock";
-  model: string;
+  model?: string;
   region?: string;
   guardrail?: string;
 }

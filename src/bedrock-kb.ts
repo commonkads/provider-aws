@@ -27,7 +27,7 @@ export class BedrockKnowledgeStore implements IKnowledgeStore {
   }
 
   get(_ref: string): Promise<FileContent> {
-    return Promise.resolve({ content: '', version: '' });
+    return Promise.resolve({ content: "", version: "" });
   }
 
   async search(query: string): Promise<FileContent> {
