@@ -6,15 +6,23 @@ import {
 import type {
   InferenceOptions,
   IInferenceProvider,
+  ProviderFileConfig,
 } from "@commonkads/engine";
-import { createDiagnosticsLogger } from "@commonkads/engine";
+import {
+  createDiagnosticsLogger,
+  loadProviderConfig,
+} from "@commonkads/engine";
 
 const logger = createDiagnosticsLogger("providers:bedrock");
+
+type AWSFileConfig = ProviderFileConfig & { region?: string };
 
 export interface BedrockTextInferenceOptions {
   region?: string;
   guardrailIdentifier?: string;
   guardrailVersion?: string;
+  /** Path to a provider config file; defaults to ~/.commonkads/aws.yml. */
+  configFile?: string;
   /** Injectable for testing; defaults to a real `BedrockRuntimeClient`. */
   client?: BedrockRuntimeClient;
 }
@@ -22,18 +30,43 @@ export interface BedrockTextInferenceOptions {
 /** `IInferenceProvider` backed by Bedrock's Converse API. */
 export class BedrockTextInference implements IInferenceProvider {
   private readonly client: BedrockRuntimeClient;
+  private readonly modelId: string;
 
   constructor(
-    private readonly modelId: string,
+    modelId?: string,
     private readonly options: BedrockTextInferenceOptions = {},
   ) {
+    const fileConfig = loadProviderConfig<AWSFileConfig>(
+      "aws",
+      options.configFile,
+    );
+
+    let resolvedModel: string;
+    let modelSource: string;
+    if (modelId !== undefined) {
+      resolvedModel = modelId;
+      modelSource = "explicit-arg";
+    } else if (fileConfig.modelId !== undefined) {
+      resolvedModel = fileConfig.modelId;
+      modelSource = "config-file";
+    } else {
+      throw new Error(
+        "modelId is required: pass it or set modelId in ~/.commonkads/providers/aws.yml",
+      );
+    }
+    this.modelId = resolvedModel;
+
+    logger.info(`config: model="${resolvedModel}" source=${modelSource}`);
+
+    const resolvedRegion = options.region ?? fileConfig.region;
+
     this.client =
-      options.client ?? new BedrockRuntimeClient({ region: options.region });
+      options.client ?? new BedrockRuntimeClient({ region: resolvedRegion });
   }
 
   /** Resolves a named guardrail for the given environment. */
   static withGuardrailName(
-    modelId: string,
+    modelId: string | undefined,
     guardrailName: string,
     options: Omit<
       BedrockTextInferenceOptions,
