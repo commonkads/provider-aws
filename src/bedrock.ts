@@ -5,7 +5,7 @@ import {
 
 import type {
   InferenceOptions,
-  IInferenceProvider,
+  InferenceProvider,
   ProviderFileConfig,
 } from "@commonkads/engine";
 import {
@@ -27,8 +27,8 @@ export interface BedrockTextInferenceOptions {
   client?: BedrockRuntimeClient;
 }
 
-/** `IInferenceProvider` backed by Bedrock's Converse API. */
-export class BedrockTextInference implements IInferenceProvider {
+/** `InferenceProvider` backed by Bedrock's Converse API. */
+export class BedrockTextInference implements InferenceProvider {
   private readonly client: BedrockRuntimeClient;
   private readonly modelId: string;
 

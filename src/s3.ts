@@ -5,7 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 
 import { FileNotFoundError } from "@commonkads/engine";
-import type { FileContent, IFileStore } from "@commonkads/engine";
+import type { FileContent, IStorageBackend } from "@commonkads/engine";
 
 export interface S3FileStoreOptions {
   region?: string;
@@ -13,8 +13,8 @@ export interface S3FileStoreOptions {
   client?: S3Client;
 }
 
-/** `IFileStore` backed by Amazon S3. */
-export class S3FileStore implements IFileStore {
+/** `IStorageBackend` backed by Amazon S3. */
+export class S3FileStore implements IStorageBackend {
   private readonly client: S3Client;
 
   constructor(
